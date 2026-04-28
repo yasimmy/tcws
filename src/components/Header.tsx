@@ -20,14 +20,16 @@ export const Header = () => {
       <nav style={{
         maxWidth: 1400,
         margin: '0 auto',
+        width: '100%',
         padding: '12px clamp(16px, 4vw, 32px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 16,
+        overflow: 'hidden',
       }}>
         {/* Logo + Badge */}
-        <Link to="/" style={{
+        <Link to="/" className="header-brand" style={{
           display: 'flex',
           alignItems: 'center',
           gap: 12,
@@ -35,6 +37,7 @@ export const Header = () => {
           fontWeight: 800,
           letterSpacing: '-0.02em',
           flexShrink: 0,
+          minWidth: 0,
         }}>
           <div style={{
             width: 36,
@@ -49,7 +52,7 @@ export const Header = () => {
           </div>
           <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             TubeCAD
-            <span style={{
+            <span className="header-badge" style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: 6,
@@ -218,12 +221,26 @@ export const Header = () => {
       )}
 
       <style>{`
+        .header-brand {
+          overflow: hidden;
+        }
+
         @media (max-width: 900px) {
           .desktop-nav {
             display: none !important;
           }
           .mobile-menu-btn {
             display: block !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .header-badge {
+            display: none !important;
+          }
+
+          .header-brand {
+            gap: 10px !important;
           }
         }
       `}</style>

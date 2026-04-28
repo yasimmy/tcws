@@ -94,7 +94,7 @@ export const HomePage = () => {
             lineHeight: 1.6,
             letterSpacing: '0.02em',
           }} className="animate-slide-up">
-            ПРОФЕССИОНАЛЬНОЕ CAD РЕШЕНИЕ ДЛЯ ПРОЕКТИРОВАНИЯ ТРУБНЫХ КОНСТРУКЦИЙ С ПОДДЕРЖКОЙ IGES И 3D ВИЗУАЛИЗАЦИИ
+            ПРОФЕССИОНАЛЬНОЕ CAD РЕШЕНИЕ ДЛЯ СОЕДИНЕНИЯ ТРУБНЫХ КОНСТРУКЦИЙ С ПОДДЕРЖКОЙ IGES И 3D ВИЗУАЛИЗАЦИИ
           </p>
 
           <div style={{
