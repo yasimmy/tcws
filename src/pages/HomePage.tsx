@@ -1,32 +1,26 @@
 import { Download, Box, Zap, Layers, Code, Shield, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { api } from '../lib/api'
 
 export const HomePage = () => {
   const [downloadCount, setDownloadCount] = useState(0)
 
   useEffect(() => {
-    // Load initial count
-    const saved = localStorage.getItem('tubecad_downloads')
-    if (saved) {
-      setDownloadCount(parseInt(saved, 10))
+    let mounted = true
+    api.getDownloadCount()
+      .then((data) => {
+        if (mounted) setDownloadCount(data.count || 0)
+      })
+      .catch(() => {})
+
+    const refresh = () => {
+      api.getDownloadCount().then((data) => setDownloadCount(data.count || 0)).catch(() => {})
     }
-
-    // Listen for storage changes
-    const handleStorageChange = () => {
-      const saved = localStorage.getItem('tubecad_downloads')
-      if (saved) {
-        setDownloadCount(parseInt(saved, 10))
-      }
-    }
-
-    window.addEventListener('storage', handleStorageChange)
-    // Also listen for custom event for same-tab updates
-    window.addEventListener('downloadCountChanged', handleStorageChange as EventListener)
-
+    window.addEventListener('downloadCountChanged', refresh as EventListener)
     return () => {
-      window.removeEventListener('storage', handleStorageChange)
-      window.removeEventListener('downloadCountChanged', handleStorageChange as EventListener)
+      mounted = false
+      window.removeEventListener('downloadCountChanged', refresh as EventListener)
     }
   }, [])
 

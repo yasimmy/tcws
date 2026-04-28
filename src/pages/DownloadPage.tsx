@@ -1,5 +1,6 @@
 import { Download, CheckCircle, Monitor, Apple, Clock } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { api } from '../lib/api'
 
 const DOWNLOAD_URL = 'https://github.com/yasimmy/tubecad/releases/download/latest/TubeCAD_0.1.3_x64-setup.exe'
 
@@ -8,28 +9,21 @@ export const DownloadPage = () => {
   const [hasDownloaded, setHasDownloaded] = useState(false)
 
   useEffect(() => {
-    const savedCount = localStorage.getItem('tubecad_downloads')
-    if (savedCount) {
-      const parsedCount = parseInt(savedCount, 10)
-      if (!Number.isNaN(parsedCount)) {
-        setDownloadCount(parsedCount)
-      }
-    }
-
-    const userDownloaded = localStorage.getItem('tubecad_user_downloaded')
-    if (userDownloaded === 'true') {
-      setHasDownloaded(true)
-    }
+    api.getDownloadCount()
+      .then((data) => setDownloadCount(data.count || 0))
+      .catch(() => {})
   }, [])
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!hasDownloaded) {
-      const newCount = downloadCount + 1
-      setDownloadCount(newCount)
-      localStorage.setItem('tubecad_downloads', newCount.toString())
-      localStorage.setItem('tubecad_user_downloaded', 'true')
-      setHasDownloaded(true)
-      window.dispatchEvent(new Event('downloadCountChanged'))
+      try {
+        const data = await api.incrementDownload()
+        setDownloadCount(data.count || 0)
+        setHasDownloaded(true)
+        window.dispatchEvent(new Event('downloadCountChanged'))
+      } catch {
+        // keep download action working even when stats API unavailable
+      }
     }
     
     // Trigger actual download

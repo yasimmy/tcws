@@ -1,10 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Box, Download, Menu, X, Sparkles } from 'lucide-react'
+import { Box, Download, Menu, UserRound, X, Sparkles } from 'lucide-react'
 import { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
 
 export const Header = () => {
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
   
   const isActive = (path: string) => location.pathname === path
 
@@ -118,34 +120,52 @@ export const Header = () => {
         </div>
 
         {/* Download Button */}
-        <Link
-          to="/download"
-          className="desktop-nav"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            padding: '8px 16px',
-            background: 'linear-gradient(135deg, #5c7cfa 0%, #4c6ef5 100%)',
-            borderRadius: 8,
-            fontSize: 14,
-            fontWeight: 600,
-            transition: 'transform 0.2s, box-shadow 0.2s',
-            boxShadow: '0 2px 8px rgba(92, 124, 250, 0.3)',
-            flexShrink: 0,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)'
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(92, 124, 250, 0.4)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(92, 124, 250, 0.3)'
-          }}
-        >
-          <Download size={16} />
-          Скачать
-        </Link>
+        <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <Link
+            to={isAuthenticated ? '/profile' : '/auth'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: '1px solid var(--border)',
+              color: 'var(--text-primary)',
+              fontSize: 14,
+              fontWeight: 600,
+              background: 'rgba(148, 163, 184, 0.08)',
+            }}
+          >
+            <UserRound size={16} />
+            {isAuthenticated ? 'Профиль' : 'Войти'}
+          </Link>
+          <Link
+            to="/download"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 16px',
+              background: 'linear-gradient(135deg, #5c7cfa 0%, #4c6ef5 100%)',
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 600,
+              transition: 'transform 0.2s, box-shadow 0.2s',
+              boxShadow: '0 2px 8px rgba(92, 124, 250, 0.3)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(92, 124, 250, 0.4)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(92, 124, 250, 0.3)'
+            }}
+          >
+            <Download size={16} />
+            Скачать
+          </Link>
+        </div>
 
         {/* Mobile Menu Button */}
         <button
@@ -179,6 +199,7 @@ export const Header = () => {
               { path: '/features', label: 'Возможности' },
               { path: '/docs', label: 'Документация' },
               { path: '/pricing', label: 'Цены' },
+              { path: isAuthenticated ? '/profile' : '/auth', label: isAuthenticated ? 'Профиль' : 'Войти' },
             ].map(({ path, label }) => (
               <Link
                 key={path}
