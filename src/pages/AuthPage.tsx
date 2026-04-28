@@ -72,7 +72,7 @@ export const AuthPage = () => {
                 Профиль TubeCAD
               </div>
 
-              <h1 style={{
+              <h1 className="auth-title" style={{
                 fontSize: 'clamp(34px, 5vw, 54px)',
                 fontWeight: 900,
                 letterSpacing: '-0.03em',
@@ -82,7 +82,7 @@ export const AuthPage = () => {
                 {mode === 'register' ? 'Создайте аккаунт' : 'Войдите в аккаунт'}
               </h1>
 
-              <p style={{
+              <p className="auth-subtitle" style={{
                 color: 'var(--text-secondary)',
                 fontSize: 'clamp(14px, 2vw, 16px)',
                 lineHeight: 1.7,
@@ -93,7 +93,7 @@ export const AuthPage = () => {
                   : 'Откройте личный кабинет: профиль, статус доступа и управление подпиской.'}
               </p>
 
-              <div style={{
+              <div className="auth-featureGrid" style={{
                 marginTop: 18,
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -329,10 +329,24 @@ export const AuthPage = () => {
                 padding: 64px 16px !important;
               }
               .auth-left {
-                padding: 6px 6px 0 !important;
+                padding: 0 6px 8px !important;
               }
               .auth-right {
                 padding: 16px !important;
+              }
+
+              /* Mobile: focus on the form, reduce marketing block */
+              .auth-title {
+                font-size: 30px !important;
+                line-height: 1.05 !important;
+                margin-bottom: 10px !important;
+              }
+              .auth-subtitle {
+                font-size: 14px !important;
+                margin-bottom: 6px !important;
+              }
+              .auth-featureGrid {
+                display: none !important;
               }
             }
           `}</style>
