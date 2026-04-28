@@ -28,8 +28,8 @@ export const AuthPage = () => {
   }
 
   return (
-    <div style={{ padding: '80px 32px', minHeight: '80vh' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+    <div className="auth-page" style={{ padding: '80px 32px', minHeight: '80vh' }}>
+      <div className="auth-container" style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{
           position: 'relative',
           borderRadius: 24,
@@ -52,7 +52,7 @@ export const AuthPage = () => {
             padding: 'clamp(18px, 3vw, 28px)',
           }}>
             {/* Left */}
-            <div style={{ padding: '10px 10px 10px 14px' }}>
+            <div className="auth-left" style={{ padding: '10px 10px 10px 14px' }}>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -122,7 +122,7 @@ export const AuthPage = () => {
             </div>
 
             {/* Right */}
-            <div style={{
+            <div className="auth-right" style={{
               borderRadius: 18,
               border: '1px solid var(--border)',
               background: 'linear-gradient(180deg, rgba(20, 20, 20, 0.92) 0%, rgba(10, 10, 10, 0.92) 100%)',
@@ -321,6 +321,18 @@ export const AuthPage = () => {
             @media (max-width: 920px) {
               .auth-grid {
                 grid-template-columns: 1fr !important;
+              }
+            }
+
+            @media (max-width: 768px) {
+              .auth-page {
+                padding: 64px 16px !important;
+              }
+              .auth-left {
+                padding: 6px 6px 0 !important;
+              }
+              .auth-right {
+                padding: 16px !important;
               }
             }
           `}</style>

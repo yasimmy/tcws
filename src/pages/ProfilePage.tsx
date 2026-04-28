@@ -34,7 +34,7 @@ export const ProfilePage = () => {
   return (
     <div>
       {/* Cover + Profile Header */}
-      <section style={{
+      <section className="profile-cover" style={{
         padding: '70px 32px 0',
         position: 'relative',
         overflow: 'hidden',
@@ -47,8 +47,8 @@ export const ProfilePage = () => {
           pointerEvents: 'none',
         }} />
 
-        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          <div style={{
+        <div className="profile-container" style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div className="profile-coverCard" style={{
             height: 190,
             borderRadius: 22,
             background: 'linear-gradient(135deg, rgba(92, 124, 250, 0.22) 0%, rgba(76, 110, 245, 0.10) 35%, rgba(0,0,0,0) 100%)',
@@ -65,7 +65,7 @@ export const ProfilePage = () => {
             }} />
           </div>
 
-          <div style={{
+          <div className="profile-headerRow" style={{
             display: 'flex',
             gap: 18,
             alignItems: 'flex-end',
@@ -74,8 +74,8 @@ export const ProfilePage = () => {
             marginTop: 18,
             padding: '0 18px 8px',
           }}>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-              <div style={{
+            <div className="profile-identity" style={{ display: 'flex', gap: 16, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+              <div className="profile-avatar" style={{
                 width: 88,
                 height: 88,
                 borderRadius: 22,
@@ -91,8 +91,8 @@ export const ProfilePage = () => {
                 </span>
               </div>
 
-              <div style={{ paddingBottom: 6 }}>
-                <div style={{
+              <div className="profile-nameBlock" style={{ paddingBottom: 6 }}>
+                <div className="profile-name" style={{
                   fontSize: 'clamp(34px, 5vw, 54px)',
                   fontWeight: 900,
                   letterSpacing: '-0.04em',
@@ -100,7 +100,7 @@ export const ProfilePage = () => {
                 }}>
                   {user.name}
                 </div>
-                <div style={{
+                <div className="profile-meta" style={{
                   display: 'flex',
                   gap: 12,
                   flexWrap: 'wrap',
@@ -121,9 +121,10 @@ export const ProfilePage = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', paddingBottom: 6 }}>
+            <div className="profile-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', paddingBottom: 6 }}>
               <Link
                 to="/pricing"
+                className="profile-primaryBtn"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -152,6 +153,7 @@ export const ProfilePage = () => {
 
               <button
                 onClick={logout}
+                className="profile-ghostBtn"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -180,7 +182,7 @@ export const ProfilePage = () => {
             </div>
           </div>
 
-          <div style={{
+          <div className="profile-statsGrid" style={{
             marginTop: 22,
             padding: '0 18px',
             display: 'grid',
@@ -213,6 +215,7 @@ export const ProfilePage = () => {
             ].map((card) => (
               <div
                 key={card.title}
+                className="profile-statCard"
                 style={{
                   padding: 18,
                   background: 'var(--bg-card)',
@@ -250,6 +253,53 @@ export const ProfilePage = () => {
             ))}
           </div>
         </div>
+
+        <style>{`
+          @media (max-width: 768px) {
+            .profile-cover {
+              padding: 64px 16px 0 !important;
+            }
+            .profile-coverCard {
+              height: 150px !important;
+              border-radius: 18px !important;
+            }
+            .profile-headerRow {
+              padding: 0 6px 8px !important;
+              margin-top: 14px !important;
+              gap: 14px !important;
+            }
+            .profile-avatar {
+              width: 72px !important;
+              height: 72px !important;
+              border-radius: 18px !important;
+            }
+            .profile-nameBlock {
+              padding-bottom: 0 !important;
+            }
+            .profile-actions {
+              width: 100%;
+              padding-bottom: 0 !important;
+            }
+            .profile-primaryBtn,
+            .profile-ghostBtn {
+              width: 100%;
+              justify-content: center;
+            }
+            .profile-statsGrid {
+              padding: 0 6px !important;
+              margin-top: 16px !important;
+              margin-bottom: 24px !important;
+              grid-template-columns: 1fr !important;
+            }
+          }
+
+          @media (max-width: 420px) {
+            .profile-meta {
+              gap: 8px !important;
+              font-size: 13px !important;
+            }
+          }
+        `}</style>
       </section>
 
       <section style={{
