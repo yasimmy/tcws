@@ -1,4 +1,4 @@
-import { Book, Rocket, Wrench, Code, Keyboard, Settings, HelpCircle, FileText, Zap, Box, Layers } from 'lucide-react'
+import { Rocket, Wrench, Keyboard, Settings, Zap, Box, Layers } from 'lucide-react'
 
 export const DocsPage = () => {
   return (
