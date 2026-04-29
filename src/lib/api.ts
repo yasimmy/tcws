@@ -15,7 +15,8 @@ const request = async (path: string, init: RequestInit = {}) => {
   const headers = new Headers(init.headers || {})
   if (!headers.has('Content-Type') && init.body) headers.set('Content-Type', 'application/json')
   headers.set('x-client-id', getClientId())
-  if (token) headers.set('Authorization', `Bearer ${token}`)
+  // Do not override explicit Authorization (e.g. admin token)
+  if (token && !headers.has('Authorization')) headers.set('Authorization', `Bearer ${token}`)
 
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers })
   const data = await res.json().catch(() => ({}))

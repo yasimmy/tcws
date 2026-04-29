@@ -16,8 +16,8 @@ const ADMIN_TOKEN_KEY = 'tubecad_admin_token'
 
 export const AdminPage = () => {
   const [token, setToken] = useState<string>(() => localStorage.getItem(ADMIN_TOKEN_KEY) || '')
-  const [username, setUsername] = useState('admin')
-  const [password, setPassword] = useState('admin')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [mustChangePassword, setMustChangePassword] = useState(false)
@@ -35,6 +35,7 @@ export const AdminPage = () => {
     if (!token) return
     const me = await api.adminMe(token)
     setMustChangePassword(!!me.mustChangePassword)
+    if (me.mustChangePassword) return
     const settings = await api.adminGetSettings(token)
     setPaymentsEnabled(!!settings.paymentsEnabled)
     setPriceUah(Number(settings.priceUah || 0))
@@ -163,7 +164,7 @@ export const AdminPage = () => {
         <div style={{ maxWidth: 520, margin: '0 auto' }}>
           <h1 style={{ fontSize: 34, fontWeight: 900, marginBottom: 10 }}>Вход в админку</h1>
           <p style={{ color: 'var(--text-secondary)', marginBottom: 18 }}>
-            По умолчанию: <b>admin/admin</b>. При первом входе потребуется смена пароля.
+            Введите админские данные. При первом входе система попросит сменить пароль.
           </p>
 
           <form onSubmit={handleLogin} style={{ display: 'grid', gap: 10 }}>
