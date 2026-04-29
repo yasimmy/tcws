@@ -99,6 +99,29 @@ db.serialize(() => {
 app.use(cors())
 app.use(express.json())
 
+const ensureUserColumns = async () => {
+  // Lightweight migrations for existing db files
+  const cols = await all(`PRAGMA table_info(users)`)
+  const names = new Set(cols.map((c) => c.name))
+  const add = async (name, type, defSql = '') => {
+    if (names.has(name)) return
+    await run(`ALTER TABLE users ADD COLUMN ${name} ${type} ${defSql}`.trim())
+  }
+  await add('subscription_plan', 'TEXT')
+  await add('subscription_status', 'TEXT')
+  await add('subscription_expires_at', 'TEXT')
+}
+
+const ensureSettingsTable = async () => {
+  await ensureSettingsRow()
+}
+
+const ensureMigrations = async () => {
+  await ensureUserColumns()
+  await ensureSettingsTable()
+  await ensureBootstrapAdmin()
+}
+
 const safeUser = (row) => ({
   id: row.id,
   name: row.name,
@@ -296,7 +319,9 @@ app.get('/api/admin/users', adminMiddleware, async (_req, res) => {
        ORDER BY id DESC`,
     )
     return res.json({ users: rows })
-  } catch {
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('admin/users failed', err)
     return res.status(500).json({ error: 'Не удалось получить пользователей.' })
   }
 })
@@ -468,5 +493,7 @@ app.listen(PORT, () => {
 })
 
 // bootstrap after listen (safe for dev)
-ensureSettingsRow().catch(() => {})
-ensureBootstrapAdmin().catch(() => {})
+ensureMigrations().catch((err) => {
+  // eslint-disable-next-line no-console
+  console.error('migrations failed', err)
+})
