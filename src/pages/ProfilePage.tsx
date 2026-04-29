@@ -31,6 +31,14 @@ export const ProfilePage = () => {
 
   if (!isAuthenticated || !user) return <Navigate to="/auth" replace />
 
+  const subscriptionLabel = user.subscriptionStatus === 'active'
+    ? 'Активна'
+    : user.subscriptionStatus === 'cancelled'
+      ? 'Отменена'
+      : user.subscriptionStatus === 'expired'
+        ? 'Истекла'
+        : 'Активен (бета)'
+
   return (
     <div>
       {/* Cover + Profile Header */}
@@ -193,8 +201,10 @@ export const ProfilePage = () => {
             {[
               {
                 title: 'Статус подписки',
-                value: 'Активен (бета)',
-                hint: 'Сейчас бесплатно. После запуска тарифов вход будет по подписке.',
+                value: subscriptionLabel,
+                hint: user.subscriptionStatus === 'active'
+                  ? `План: ${user.subscriptionPlan || '—'}${user.subscriptionExpiresAt ? ` · до ${formatDate(user.subscriptionExpiresAt)}` : ''}`
+                  : 'Сейчас бесплатно. После запуска тарифов вход будет по подписке.',
                 icon: BadgeCheck,
                 color: '#52c07a',
               },

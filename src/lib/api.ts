@@ -43,9 +43,45 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({}),
     }),
-  linkTelegram: (payload: Record<string, string | number>) =>
-    request('/api/telegram/link', {
+  getPublicSettings: () => request('/api/public/settings'),
+
+  adminLogin: (username: string, password: string) =>
+    request('/api/admin/login', {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ username, password }),
+    }),
+  adminMe: (adminToken: string) =>
+    request('/api/admin/me', {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    }),
+  adminChangePassword: (adminToken: string, newPassword: string) =>
+    request('/api/admin/change-password', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: JSON.stringify({ newPassword }),
+    }),
+  adminGetUsers: (adminToken: string) =>
+    request('/api/admin/users', {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    }),
+  adminUpdateUserSubscription: (
+    adminToken: string,
+    userId: number,
+    body: { plan?: string; status?: string; expiresAt?: string | null },
+  ) =>
+    request(`/api/admin/users/${userId}/subscription`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: JSON.stringify(body),
+    }),
+  adminGetSettings: (adminToken: string) =>
+    request('/api/admin/settings', {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    }),
+  adminSetSettings: (adminToken: string, body: { paymentsEnabled: boolean; priceUah: number }) =>
+    request('/api/admin/settings', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: JSON.stringify(body),
     }),
 }

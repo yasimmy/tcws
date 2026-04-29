@@ -8,6 +8,7 @@ import { DownloadPage } from './pages/DownloadPage'
 import { PricingPage } from './pages/PricingPage'
 import { AuthPage } from './pages/AuthPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { AdminPage } from './pages/AdminPage'
 import { useAuth } from './context/AuthContext'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/profile" element={isAuthenticated ? <ProfilePage /> : <Navigate to="/auth" replace />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </main>
       <Footer />

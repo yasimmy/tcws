@@ -1,6 +1,25 @@
-import { Check, Sparkles, ShieldCheck, Wrench, Clock3, MessageCircle } from 'lucide-react'
+import { Check, Sparkles, ShieldCheck, Wrench, Clock3, MessageCircle, CreditCard } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { api } from '../lib/api'
 
 export const PricingPage = () => {
+  const [paymentsEnabled, setPaymentsEnabled] = useState(false)
+  const [priceUah, setPriceUah] = useState(0)
+  const payText = useMemo(() => {
+    if (!paymentsEnabled) return 'Оплата временно недоступна'
+    if (priceUah <= 0) return 'Оплатить'
+    return `Оплатить · ${priceUah} ₴`
+  }, [paymentsEnabled, priceUah])
+
+  useEffect(() => {
+    api.getPublicSettings()
+      .then((s) => {
+        setPaymentsEnabled(!!s.paymentsEnabled)
+        setPriceUah(Number(s.priceUah || 0))
+      })
+      .catch(() => {})
+  }, [])
+
   const plans = [
     {
       name: 'Starter',
@@ -86,7 +105,8 @@ export const PricingPage = () => {
           Прозрачная модель тарифов без скрытых условий. Сейчас сервис работает во временном бесплатном режиме.
         </p>
 
-        <div style={{
+        {!paymentsEnabled && (
+          <div style={{
           margin: '0 auto 44px',
           maxWidth: 920,
           borderRadius: 16,
@@ -96,7 +116,7 @@ export const PricingPage = () => {
           display: 'flex',
           alignItems: 'flex-start',
           gap: 12,
-        }}>
+          }}>
           <Sparkles size={18} color="#4ade80" style={{ marginTop: 2, flexShrink: 0 }} />
           <p style={{ color: '#d1fae5', lineHeight: 1.6, fontSize: 14 }}>
             Сейчас приложение доступно бесплатно для всех пользователей.
@@ -104,6 +124,7 @@ export const PricingPage = () => {
             После запуска тарифов вход будет доступен только с активной подпиской.
           </p>
         </div>
+        )}
 
         <div style={{
           display: 'grid',
@@ -191,21 +212,26 @@ export const PricingPage = () => {
               </ul>
 
               <button
-                disabled
+                disabled={!paymentsEnabled}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: 10,
-                  background: 'rgba(148, 163, 184, 0.12)',
-                  border: '1px solid rgba(148, 163, 184, 0.25)',
-                  color: '#cbd5e1',
+                  background: paymentsEnabled ? 'linear-gradient(135deg, #5c7cfa 0%, #4c6ef5 100%)' : 'rgba(148, 163, 184, 0.12)',
+                  border: paymentsEnabled ? 'none' : '1px solid rgba(148, 163, 184, 0.25)',
+                  color: paymentsEnabled ? '#fff' : '#cbd5e1',
                   fontWeight: 600,
                   fontSize: 14,
-                  cursor: 'not-allowed',
-                  opacity: 0.9,
+                  cursor: paymentsEnabled ? 'pointer' : 'not-allowed',
+                  opacity: paymentsEnabled ? 1 : 0.9,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 10,
                 }}
               >
-                Оплата временно недоступна
+                <CreditCard size={16} />
+                {payText}
               </button>
             </article>
           ))}

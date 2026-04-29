@@ -11,6 +11,9 @@ type AuthUser = {
   tgFirstName?: string
   tgPhotoUrl?: string
   tgLinkedAt?: string
+  subscriptionPlan?: string
+  subscriptionStatus?: string
+  subscriptionExpiresAt?: string | null
 }
 
 type AuthResult = {
@@ -74,15 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
-  const linkTelegram = async (payload: Record<string, string | number>): Promise<AuthResult> => {
-    try {
-      const data = await api.linkTelegram(payload)
-      setUser(data.user)
-      return { ok: true }
-    } catch (error) {
-      return { ok: false, error: error instanceof Error ? error.message : 'Не удалось привязать Telegram.' }
-    }
-  }
+  const linkTelegram = async (): Promise<AuthResult> => ({ ok: false, error: 'Telegram отключён.' })
 
   const value = useMemo<AuthContextValue>(() => ({
     user,
