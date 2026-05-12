@@ -91,6 +91,29 @@ export const HomePage = () => {
             ПРОФЕССИОНАЛЬНОЕ CAD РЕШЕНИЕ ДЛЯ СОЕДИНЕНИЯ ТРУБНЫХ КОНСТРУКЦИЙ С ПОДДЕРЖКОЙ IGES И 3D ВИЗУАЛИЗАЦИИ
           </p>
 
+          <div
+            className="animate-slide-up"
+            style={{
+              display: 'inline-flex',
+              margin: '0 auto 28px',
+              padding: '10px 16px',
+              borderRadius: 999,
+              border: '1px solid rgba(148, 163, 184, 0.28)',
+              background: 'rgba(15, 23, 42, 0.55)',
+              boxShadow: '0 8px 28px rgba(0, 0, 0, 0.35)',
+            }}
+          >
+            <span style={{
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+              color: '#cbd5e1',
+            }}>
+              {`${formatNumber(downloadCount)} пользователей установило TubeCAD`}
+            </span>
+          </div>
+
           <div style={{
             display: 'flex',
             gap: 16,

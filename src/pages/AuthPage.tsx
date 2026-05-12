@@ -1,18 +1,28 @@
-import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { ShieldCheck, Sparkles, Lock, Mail, UserRound, Crown } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { api } from '../lib/api'
 
 export const AuthPage = () => {
   const { isAuthenticated, login, register } = useAuth()
+  const [searchParams] = useSearchParams()
+  const appRequestId = searchParams.get('app_request') || ''
   const [mode, setMode] = useState<'login' | 'register'>('register')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showAppModal, setShowAppModal] = useState(false)
 
-  if (isAuthenticated) return <Navigate to="/profile" replace />
+  useEffect(() => {
+    if (!isAuthenticated || !appRequestId) return
+    setShowAppModal(true)
+  }, [appRequestId, isAuthenticated])
+
+  if (isAuthenticated && !appRequestId) return <Navigate to="/profile" replace />
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,6 +34,14 @@ export const AuthPage = () => {
       : await login(email, password)
 
     if (!result.ok) setError(result.error || 'Не удалось выполнить операцию.')
+    if (result.ok && appRequestId) {
+      try {
+        await api.appAuthComplete(appRequestId)
+        setSuccess('Вход в приложение подтвержден. Вернитесь в TubeCAD.')
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Не удалось подтвердить вход для приложения.')
+      }
+    }
     setLoading(false)
   }
 
@@ -92,6 +110,21 @@ export const AuthPage = () => {
                   ? 'Регистрация займёт минуту. После входа вы сможете управлять доступом и подпиской.'
                   : 'Откройте личный кабинет: профиль, статус доступа и управление подпиской.'}
               </p>
+              {appRequestId ? (
+                <div style={{
+                  marginTop: 12,
+                  border: '1px solid rgba(92, 124, 250, 0.35)',
+                  background: 'rgba(19, 32, 57, 0.55)',
+                  borderRadius: 12,
+                  padding: '10px 12px',
+                  color: '#d7e4ff',
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                  maxWidth: 560,
+                }}>
+                  Вы входите для десктоп-приложения TubeCAD. После входа доступ в приложении активируется автоматически.
+                </div>
+              ) : null}
 
               <div className="auth-featureGrid" style={{
                 marginTop: 18,
@@ -268,6 +301,18 @@ export const AuthPage = () => {
                     {error}
                   </div>
                 )}
+                {success && (
+                  <div style={{
+                    color: '#b7ffd1',
+                    border: '1px solid rgba(52, 211, 153, 0.45)',
+                    background: 'rgba(7, 64, 43, 0.35)',
+                    borderRadius: 12,
+                    padding: '10px 12px',
+                    fontSize: 14,
+                  }}>
+                    {success}
+                  </div>
+                )}
 
                 <button
                   type="submit"
@@ -352,6 +397,101 @@ export const AuthPage = () => {
           `}</style>
         </div>
       </div>
+      {showAppModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(2, 6, 23, 0.76)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: 16,
+        }}>
+          <div style={{
+            width: 520,
+            maxWidth: 'calc(100vw - 24px)',
+            borderRadius: 14,
+            border: '1px solid rgba(92, 124, 250, 0.35)',
+            background: 'linear-gradient(180deg, rgba(13, 22, 40, 0.95), rgba(8, 14, 28, 0.95))',
+            boxShadow: '0 18px 42px rgba(0,0,0,0.5)',
+            padding: 16,
+          }}>
+            <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 8 }}>Вход для TubeCAD</div>
+            <div style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 14 }}>
+              Нажмите кнопку ниже, чтобы подтвердить вход и открыть приложение.
+            </div>
+            {error && (
+              <div style={{
+                color: '#fda4af',
+                border: '1px solid rgba(251, 113, 133, 0.35)',
+                background: 'rgba(127, 29, 29, 0.25)',
+                borderRadius: 10,
+                padding: '10px 12px',
+                fontSize: 13,
+                marginBottom: 10,
+              }}>
+                {error}
+              </div>
+            )}
+            {success && (
+              <div style={{
+                color: '#b7ffd1',
+                border: '1px solid rgba(52, 211, 153, 0.45)',
+                background: 'rgba(7, 64, 43, 0.35)',
+                borderRadius: 10,
+                padding: '10px 12px',
+                fontSize: 13,
+                marginBottom: 10,
+              }}>
+                {success}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                disabled={loading}
+                onClick={async () => {
+                  setLoading(true)
+                  setError('')
+                  try {
+                    await api.appAuthComplete(appRequestId)
+                    setSuccess('Подтверждено. Если приложение не открылось автоматически, вернитесь в окно TubeCAD.')
+                    try {
+                      window.location.href = 'tubecad://auth-complete'
+                    } catch {}
+                  } catch (e) {
+                    setError(e instanceof Error ? e.message : 'Не удалось подтвердить вход для приложения.')
+                  } finally {
+                    setLoading(false)
+                  }
+                }}
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #5c7cfa 0%, #4c6ef5 100%)',
+                  color: '#fff',
+                  fontWeight: 800,
+                  fontSize: 14,
+                }}
+              >
+                {loading ? 'Подтверждение...' : 'Открыть в приложении'}
+              </button>
+              <button
+                onClick={() => setShowAppModal(false)}
+                style={{
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

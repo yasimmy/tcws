@@ -1,21 +1,32 @@
 import { Check, Sparkles, ShieldCheck, Wrench, Clock3, MessageCircle, CreditCard } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import { useAuth } from '../context/AuthContext'
 
 export const PricingPage = () => {
+  const { isAuthenticated } = useAuth()
   const [paymentsEnabled, setPaymentsEnabled] = useState(false)
-  const [priceUah, setPriceUah] = useState(0)
-  const payText = useMemo(() => {
+  const [prices, setPrices] = useState<{ starter: number; pro: number; team: number }>({ starter: 0, pro: 0, team: 0 })
+  const [actionMessage, setActionMessage] = useState('')
+  const [paymentModalPlan, setPaymentModalPlan] = useState<'pro' | 'team' | null>(null)
+  const [loadingTrial, setLoadingTrial] = useState(false)
+  const payButtonLabel = (planName: string) => {
     if (!paymentsEnabled) return 'Оплата временно недоступна'
-    if (priceUah <= 0) return 'Оплатить'
-    return `Оплатить · ${priceUah} ₴`
-  }, [paymentsEnabled, priceUah])
+    const amount =
+      planName === 'Team' ? prices.team : planName === 'Pro' ? prices.pro : planName === 'Starter' ? prices.starter : 0
+    if (amount > 0) return `Оплатить · ${amount} ₴`
+    return 'Оплатить'
+  }
 
   useEffect(() => {
     api.getPublicSettings()
       .then((s) => {
         setPaymentsEnabled(!!s.paymentsEnabled)
-        setPriceUah(Number(s.priceUah || 0))
+        setPrices({
+          starter: Number(s.prices?.starter || 0),
+          pro: Number(s.prices?.pro || 0),
+          team: Number(s.prices?.team || 0),
+        })
       })
       .catch(() => {})
   }, [])
@@ -60,6 +71,30 @@ export const PricingPage = () => {
     },
   ]
 
+  const effectivePlans = paymentsEnabled
+    ? [
+      {
+        name: 'Trial',
+        subtitle: '30 дней для теста перед оплатой',
+        price: '0 ₴',
+        period: '30 дней · 1 раз на устройство',
+        features: [
+          'Полный доступ к функциям Starter',
+          'Активация только один раз на одно железо',
+          'После окончания требуется активная подписка',
+          'Нельзя переактивировать trial на том же устройстве',
+        ],
+      },
+      ...plans
+        .filter((p) => p.name !== 'Starter')
+        .map((p) => {
+          const key = p.name === 'Pro' ? 'pro' : 'team'
+          const v = prices[key as 'pro' | 'team'] || 0
+          return { ...p, price: `${v} ₴`, period: 'в месяц' }
+        }),
+    ]
+    : plans
+
   const compareRows = [
     { name: 'Импорт/экспорт IGES', starter: 'Да', pro: 'Да', team: 'Да' },
     { name: 'Правила размещения и шаблоны', starter: 'Базовые', pro: 'Расширенные', team: 'Расширенные + стандарты' },
@@ -102,7 +137,9 @@ export const PricingPage = () => {
           margin: '0 auto 36px',
           lineHeight: 1.6,
         }}>
-          Прозрачная модель тарифов без скрытых условий. Сейчас сервис работает во временном бесплатном режиме.
+          {paymentsEnabled
+            ? 'Выберите подходящий тариф и продолжайте работу без ограничений.'
+            : 'Прозрачная модель тарифов без скрытых условий. Сейчас сервис работает во временном бесплатном режиме.'}
         </p>
 
         {!paymentsEnabled && (
@@ -132,12 +169,14 @@ export const PricingPage = () => {
           gap: 22,
           marginBottom: 32,
         }}>
-          {plans.map((plan) => (
+          {effectivePlans.map((plan) => (
             <article
               key={plan.name}
               style={{
                 borderRadius: 18,
                 padding: 28,
+                display: 'flex',
+                flexDirection: 'column',
                 background: plan.highlighted
                   ? 'linear-gradient(160deg, rgba(92, 124, 250, 0.2) 0%, rgba(15, 23, 42, 0.95) 55%)'
                   : 'var(--bg-card)',
@@ -151,13 +190,15 @@ export const PricingPage = () => {
             >
               <div style={{
                 display: 'inline-flex',
+                alignSelf: 'flex-start',
+                width: 'fit-content',
                 alignItems: 'center',
                 gap: 8,
-                padding: '6px 10px',
+                padding: '4px 9px',
                 borderRadius: 999,
                 border: '1px solid rgba(148, 163, 184, 0.28)',
                 color: '#cbd5e1',
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 600,
                 marginBottom: 16,
                 textTransform: 'uppercase',
@@ -195,6 +236,7 @@ export const PricingPage = () => {
                 display: 'grid',
                 gap: 10,
                 marginBottom: 24,
+                flex: 1,
               }}>
                 {plan.features.map((feature) => (
                   <li key={feature} style={{
@@ -205,7 +247,21 @@ export const PricingPage = () => {
                     lineHeight: 1.45,
                     fontSize: 14,
                   }}>
-                    <Check size={16} color="#5c7cfa" style={{ marginTop: 2, flexShrink: 0 }} />
+                    <span style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: 7,
+                      border: '1px solid rgba(92, 124, 250, 0.45)',
+                      background: 'rgba(92, 124, 250, 0.12)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginTop: 2,
+                      flexShrink: 0,
+                      boxShadow: '0 8px 22px rgba(92, 124, 250, 0.18)',
+                    }}>
+                      <Check size={12} color="#a5b4fc" />
+                    </span>
                     {feature}
                   </li>
                 ))}
@@ -213,7 +269,29 @@ export const PricingPage = () => {
 
               <button
                 disabled={!paymentsEnabled}
+                onClick={async () => {
+                  setActionMessage('')
+                  if (plan.name === 'Trial') {
+                    if (!isAuthenticated) {
+                      setActionMessage('Сначала войдите в аккаунт, чтобы получить trial.')
+                      return
+                    }
+                    setLoadingTrial(true)
+                    try {
+                      const data = await api.activateTrial()
+                      setActionMessage(data?.message || 'Trial активирована на 30 дней.')
+                    } catch (e) {
+                      setActionMessage(e instanceof Error ? e.message : 'Не удалось активировать trial.')
+                    } finally {
+                      setLoadingTrial(false)
+                    }
+                    return
+                  }
+                  const planKey = plan.name.toLowerCase() === 'team' ? 'team' : 'pro'
+                  setPaymentModalPlan(planKey as 'pro' | 'team')
+                }}
                 style={{
+                  marginTop: 'auto',
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: 10,
@@ -231,13 +309,94 @@ export const PricingPage = () => {
                 }}
               >
                 <CreditCard size={16} />
-                {payText}
+                {plan.name === 'Trial'
+                  ? (loadingTrial ? 'Активация...' : 'Получить Trial')
+                  : payButtonLabel(plan.name)}
               </button>
             </article>
           ))}
         </div>
+        {actionMessage && (
+          <div style={{
+            marginBottom: 16,
+            border: '1px solid rgba(148, 163, 184, 0.22)',
+            borderRadius: 12,
+            background: 'rgba(15, 23, 42, 0.4)',
+            padding: '10px 12px',
+            color: '#dbe6ff',
+            fontSize: 14,
+          }}>
+            {actionMessage}
+          </div>
+        )}
+        {paymentModalPlan && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.62)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: 16,
+          }}>
+            <div style={{
+              width: 460,
+              maxWidth: 'calc(100vw - 24px)',
+              borderRadius: 14,
+              border: '1px solid rgba(92, 124, 250, 0.35)',
+              background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(10, 10, 10, 0.95))',
+              padding: 16,
+              boxShadow: '0 18px 42px rgba(0,0,0,0.5)',
+            }}>
+              <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 8 }}>Выберите сервис оплаты</div>
+              <div style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.5, marginBottom: 12 }}>
+                Тариф: <b style={{ color: '#dbe6ff' }}>{paymentModalPlan.toUpperCase()}</b>
+                {prices[paymentModalPlan] > 0 ? (
+                  <> · сумма: <b style={{ color: '#dbe6ff' }}>{prices[paymentModalPlan]} ₴</b></>
+                ) : null}
+                . Ниже временные заглушки, вы потом подключите нужный провайдер.
+              </div>
+              <div style={{ display: 'grid', gap: 8, marginBottom: 12 }}>
+                {['Stripe', 'Fondy', 'LiqPay', 'Крипто'].map((name) => (
+                  <button
+                    key={name}
+                    onClick={() => setActionMessage(`Вы выбрали ${name}. Подключите обработчик оплаты в этом месте.`)}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '10px 12px',
+                      borderRadius: 10,
+                      border: '1px solid var(--border)',
+                      background: 'rgba(148, 163, 184, 0.08)',
+                      color: '#dbe6ff',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setPaymentModalPlan(null)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--text-secondary)',
+                  fontWeight: 700,
+                }}
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        )}
 
-        <section style={{
+        {!paymentsEnabled && (
+          <section style={{
           marginBottom: 30,
           border: '1px solid var(--border)',
           borderRadius: 16,
@@ -284,8 +443,10 @@ export const PricingPage = () => {
             </table>
           </div>
         </section>
+        )}
 
-        <section style={{
+        {!paymentsEnabled && (
+          <section style={{
           display: 'grid',
           gap: 12,
           marginBottom: 12,
@@ -313,6 +474,7 @@ export const PricingPage = () => {
             </div>
           ))}
         </section>
+        )}
       </div>
     </div>
   )

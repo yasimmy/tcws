@@ -5,7 +5,7 @@ import { api } from '../lib/api'
 const DOWNLOAD_URL = 'https://github.com/yasimmy/tubecad/releases/download/latest/TubeCAD_0.1.3_x64-setup.exe'
 
 export const DownloadPage = () => {
-  const [downloadCount, setDownloadCount] = useState(0)
+  const [, setDownloadCount] = useState(0)
   const [hasDownloaded, setHasDownloaded] = useState(false)
 
   useEffect(() => {
@@ -33,13 +33,6 @@ export const DownloadPage = () => {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-  }
-
-  const formatCount = (count: number) => {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`
-    }
-    return count.toString()
   }
 
   return (

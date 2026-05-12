@@ -1,6 +1,8 @@
 import { Link, Navigate } from 'react-router-dom'
 import { LogOut, ShieldCheck, BadgeCheck, Crown, ArrowRight, Mail, Calendar, Fingerprint, Settings } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { api } from '../lib/api'
 
 const formatDate = (iso: string | undefined) => {
   if (!iso) return '—'
@@ -28,16 +30,26 @@ const BootstrapPersonIcon = ({ size = 30 }: { size?: number }) => (
 
 export const ProfilePage = () => {
   const { user, isAuthenticated, logout } = useAuth()
+  const [paymentsEnabled, setPaymentsEnabled] = useState(false)
 
   if (!isAuthenticated || !user) return <Navigate to="/auth" replace />
 
-  const subscriptionLabel = user.subscriptionStatus === 'active'
+  useEffect(() => {
+    api.getPublicSettings()
+      .then((s) => setPaymentsEnabled(!!s.paymentsEnabled))
+      .catch(() => {})
+  }, [])
+
+  const subscriptionLabel = useMemo(() => {
+    if (paymentsEnabled && user.subscriptionStatus !== 'active') return 'Неактивна'
+    return user.subscriptionStatus === 'active'
     ? 'Активна'
     : user.subscriptionStatus === 'cancelled'
       ? 'Отменена'
       : user.subscriptionStatus === 'expired'
         ? 'Истекла'
         : 'Активен (бета)'
+  }, [paymentsEnabled, user.subscriptionStatus])
 
   return (
     <div>
@@ -354,7 +366,9 @@ export const ProfilePage = () => {
                 Управление подпиской
               </h3>
               <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 18 }}>
-                Сейчас доступ работает в бесплатном режиме. Когда тарифы будут включены — управление подпиской появится здесь.
+                {paymentsEnabled
+                  ? 'Управляйте тарифом и следите за сроком действия подписки.'
+                  : 'Сейчас доступ работает в бесплатном режиме. Когда тарифы будут включены — управление подпиской появится здесь.'}
               </p>
               <Link
                 to="/pricing"
@@ -397,7 +411,11 @@ export const ProfilePage = () => {
                 Статус доступа
               </h3>
               <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                Активен (бета). Сейчас доступ бесплатный. После запуска тарифов вход будет только по подписке.
+                {paymentsEnabled
+                  ? (user.subscriptionStatus === 'active'
+                    ? 'Подписка активна. Доступ открыт.'
+                    : 'Подписка неактивна. Для входа потребуется активный тариф.')
+                  : 'Активен (бета). Сейчас доступ бесплатный. После запуска тарифов вход будет только по подписке.'}
               </p>
             </div>
           </div>

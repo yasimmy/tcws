@@ -45,6 +45,34 @@ export const api = {
       body: JSON.stringify({}),
     }),
   getPublicSettings: () => request('/api/public/settings'),
+  appAuthStart: (clientId: string) =>
+    request('/api/app-auth/start', {
+      method: 'POST',
+      body: JSON.stringify({ clientId }),
+    }),
+  appAuthStatus: (requestId: string) =>
+    request(`/api/app-auth/status/${requestId}`),
+  appAuthComplete: (requestId: string) =>
+    request('/api/app-auth/complete', {
+      method: 'POST',
+      body: JSON.stringify({ requestId }),
+    }),
+  appAccessCheck: (body: {
+    fingerprintHash: string
+    machineGuidHash?: string
+    boardHash?: string
+    diskHash?: string
+    cpuHash?: string
+  }) =>
+    request('/api/app-access/check', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  activateTrial: () =>
+    request('/api/subscription/trial/activate', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    }),
 
   adminLogin: (username: string, password: string) =>
     request('/api/admin/login', {
@@ -75,11 +103,21 @@ export const api = {
       headers: { Authorization: `Bearer ${adminToken}` },
       body: JSON.stringify(body),
     }),
+  adminSubscriptionAction: (
+    adminToken: string,
+    userId: number,
+    body: { action: 'grant' | 'revoke'; plan?: string; days?: number; reason: string; extendExisting?: boolean },
+  ) =>
+    request(`/api/admin/users/${userId}/subscription-action`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: JSON.stringify(body),
+    }),
   adminGetSettings: (adminToken: string) =>
     request('/api/admin/settings', {
       headers: { Authorization: `Bearer ${adminToken}` },
     }),
-  adminSetSettings: (adminToken: string, body: { paymentsEnabled: boolean; priceUah: number }) =>
+  adminSetSettings: (adminToken: string, body: { paymentsEnabled: boolean; priceUah: number; prices: { starter: number; pro: number; team: number } }) =>
     request('/api/admin/settings', {
       method: 'POST',
       headers: { Authorization: `Bearer ${adminToken}` },

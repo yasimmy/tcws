@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api'
-import { Shield, Users, Settings2, Save, KeyRound } from 'lucide-react'
+import { Shield, Users, Settings2, Save, KeyRound, Check, X, Clock4 } from 'lucide-react'
 
 type AdminUserRow = {
   id: number
@@ -26,8 +26,17 @@ export const AdminPage = () => {
   const [users, setUsers] = useState<AdminUserRow[]>([])
   const [paymentsEnabled, setPaymentsEnabled] = useState(false)
   const [priceUah, setPriceUah] = useState(0)
+  const [prices, setPrices] = useState({ starter: 0, pro: 0, team: 0 })
   const [savingSettings, setSavingSettings] = useState(false)
   const [activeTab, setActiveTab] = useState<'users' | 'settings'>('users')
+
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<'grant' | 'revoke'>('grant')
+  const [modalUser, setModalUser] = useState<AdminUserRow | null>(null)
+  const [modalPlan, setModalPlan] = useState<'starter' | 'pro' | 'team'>('starter')
+  const [modalDays, setModalDays] = useState(30)
+  const [modalReason, setModalReason] = useState('')
+  const [modalExtend, setModalExtend] = useState(true)
 
   const isAuthed = !!token
 
@@ -39,6 +48,11 @@ export const AdminPage = () => {
     const settings = await api.adminGetSettings(token)
     setPaymentsEnabled(!!settings.paymentsEnabled)
     setPriceUah(Number(settings.priceUah || 0))
+    setPrices({
+      starter: Number(settings.prices?.starter || 0),
+      pro: Number(settings.prices?.pro || 0),
+      team: Number(settings.prices?.team || 0),
+    })
     const u = await api.adminGetUsers(token)
     setUsers(u.users || [])
   }
@@ -90,9 +104,14 @@ export const AdminPage = () => {
     setSavingSettings(true)
     setError('')
     try {
-      const data = await api.adminSetSettings(token, { paymentsEnabled, priceUah })
+      const data = await api.adminSetSettings(token, { paymentsEnabled, priceUah, prices })
       setPaymentsEnabled(!!data.paymentsEnabled)
       setPriceUah(Number(data.priceUah || 0))
+      setPrices({
+        starter: Number(data.prices?.starter || 0),
+        pro: Number(data.prices?.pro || 0),
+        team: Number(data.prices?.team || 0),
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось сохранить настройки')
     } finally {
@@ -109,6 +128,49 @@ export const AdminPage = () => {
       setUsers((prev) => prev.map((x) => (x.id === u.id ? updated : x)))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось обновить пользователя')
+    }
+  }
+
+  const openGrant = (u: AdminUserRow) => {
+    setModalUser(u)
+    setModalMode('grant')
+    setModalPlan((u.subscription_plan as any) || 'starter')
+    setModalDays(30)
+    setModalReason('')
+    setModalExtend(true)
+    setModalOpen(true)
+  }
+
+  const openRevoke = (u: AdminUserRow) => {
+    setModalUser(u)
+    setModalMode('revoke')
+    setModalReason('')
+    setModalOpen(true)
+  }
+
+  const submitModal = async () => {
+    if (!token || !modalUser) return
+    setError('')
+    try {
+      if (modalMode === 'grant') {
+        const data = await api.adminSubscriptionAction(token, modalUser.id, {
+          action: 'grant',
+          plan: modalPlan,
+          days: modalDays,
+          reason: modalReason,
+          extendExisting: modalExtend,
+        })
+        setUsers((prev) => prev.map((x) => (x.id === modalUser.id ? data.user : x)))
+      } else {
+        const data = await api.adminSubscriptionAction(token, modalUser.id, {
+          action: 'revoke',
+          reason: modalReason,
+        })
+        setUsers((prev) => prev.map((x) => (x.id === modalUser.id ? data.user : x)))
+      }
+      setModalOpen(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось выполнить операцию')
     }
   }
 
@@ -228,15 +290,58 @@ export const AdminPage = () => {
         {activeTab === 'settings' && (
           <section style={{ border: '1px solid var(--border)', borderRadius: 16, padding: 18, background: 'var(--bg-card)' }}>
             <div style={{ display: 'grid', gap: 12, maxWidth: 520 }}>
-              <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <input type="checkbox" checked={paymentsEnabled} onChange={(e) => setPaymentsEnabled(e.target.checked)} />
-                <span style={{ fontWeight: 800 }}>Оплата включена</span>
-              </label>
+              <button
+                type="button"
+                onClick={() => setPaymentsEnabled((v) => !v)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '10px 12px',
+                  borderRadius: 12,
+                  border: '1px solid var(--border)',
+                  background: 'rgba(148, 163, 184, 0.06)',
+                  color: 'var(--text-primary)',
+                  fontWeight: 900,
+                  justifyContent: 'space-between',
+                }}
+              >
+                <span>Оплата включена</span>
+                <span style={{
+                  width: 22,
+                  height: 22,
+                  borderRadius: 8,
+                  border: paymentsEnabled ? '1px solid rgba(34, 197, 94, 0.45)' : '1px solid rgba(148, 163, 184, 0.35)',
+                  background: paymentsEnabled ? 'rgba(34, 197, 94, 0.16)' : 'transparent',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: paymentsEnabled ? '#bbf7d0' : 'transparent',
+                }}>
+                  <Check size={14} />
+                </span>
+              </button>
               <label style={{ display: 'grid', gap: 6 }}>
                 <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Цена (₴)</span>
                 <input type="number" value={priceUah} onChange={(e) => setPriceUah(Number(e.target.value))}
                   style={{ padding: '10px 12px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} />
               </label>
+
+              <div style={{ borderTop: '1px solid rgba(148, 163, 184, 0.12)', paddingTop: 12, display: 'grid', gap: 10 }}>
+                <div style={{ fontWeight: 900 }}>Цены по тарифам (₴)</div>
+                {(['starter', 'pro', 'team'] as const).map((k) => (
+                  <label key={k} style={{ display: 'grid', gap: 6 }}>
+                    <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{k.toUpperCase()}</span>
+                    <input
+                      type="number"
+                      value={prices[k]}
+                      onChange={(e) => setPrices((p) => ({ ...p, [k]: Number(e.target.value) }))}
+                      style={{ padding: '10px 12px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                    />
+                  </label>
+                ))}
+              </div>
+
               <button onClick={saveSettings} disabled={savingSettings} style={{
                 padding: '12px 14px',
                 borderRadius: 12,
@@ -276,7 +381,7 @@ export const AdminPage = () => {
                         <select
                           value={u.subscription_plan || 'starter'}
                           onChange={(e) => updateUser(u, { plan: e.target.value })}
-                          style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                          style={{ padding: '8px 12px', borderRadius: 12, border: '1px solid rgba(148, 163, 184, 0.22)', background: 'rgba(15, 23, 42, 0.65)', color: 'var(--text-primary)' }}
                         >
                           <option value="starter">starter</option>
                           <option value="pro">pro</option>
@@ -287,7 +392,7 @@ export const AdminPage = () => {
                         <select
                           value={u.subscription_status || 'beta_free'}
                           onChange={(e) => updateUser(u, { status: e.target.value })}
-                          style={{ padding: '8px 10px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                          style={{ padding: '8px 12px', borderRadius: 12, border: '1px solid rgba(148, 163, 184, 0.22)', background: 'rgba(15, 23, 42, 0.65)', color: 'var(--text-primary)' }}
                         >
                           <option value="beta_free">beta_free</option>
                           <option value="active">active</option>
@@ -297,13 +402,13 @@ export const AdminPage = () => {
                       </td>
                       <td style={{ padding: '12px 14px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         <button
-                          onClick={() => updateUser(u, { status: 'active' })}
+                          onClick={() => openGrant(u)}
                           style={{ padding: '8px 10px', borderRadius: 10, background: 'rgba(34, 197, 94, 0.14)', border: '1px solid rgba(34, 197, 94, 0.3)', color: '#bbf7d0', fontWeight: 800 }}
                         >
                           Выдать
                         </button>
                         <button
-                          onClick={() => updateUser(u, { status: 'cancelled' })}
+                          onClick={() => openRevoke(u)}
                           style={{ padding: '8px 10px', borderRadius: 10, background: 'rgba(248, 113, 113, 0.10)', border: '1px solid rgba(248, 113, 113, 0.22)', color: '#fecaca', fontWeight: 800 }}
                         >
                           Аннулировать
@@ -315,6 +420,138 @@ export const AdminPage = () => {
               </table>
             </div>
           </section>
+        )}
+
+        {modalOpen && modalUser && (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.55)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            zIndex: 2000,
+          }}>
+            <div style={{
+              width: 'min(680px, 100%)',
+              borderRadius: 18,
+              border: '1px solid rgba(148, 163, 184, 0.22)',
+              background: 'linear-gradient(180deg, rgba(20, 20, 20, 0.95) 0%, rgba(10, 10, 10, 0.95) 100%)',
+              boxShadow: '0 18px 48px rgba(0,0,0,0.55)',
+              padding: 18,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ fontWeight: 900, fontSize: 18 }}>
+                  {modalMode === 'grant' ? 'Выдать подписку' : 'Аннулировать подписку'} · {modalUser.email}
+                </div>
+                <button onClick={() => setModalOpen(false)} style={{
+                  width: 36, height: 36, borderRadius: 12, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)',
+                }}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gap: 12 }}>
+                {modalMode === 'grant' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <label style={{ display: 'grid', gap: 6 }}>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>План</span>
+                      <select
+                        value={modalPlan}
+                        onChange={(e) => setModalPlan(e.target.value as any)}
+                        style={{ padding: '10px 12px', borderRadius: 12, border: '1px solid rgba(148, 163, 184, 0.22)', background: 'rgba(15, 23, 42, 0.65)', color: 'var(--text-primary)' }}
+                      >
+                        <option value="starter">starter</option>
+                        <option value="pro">pro</option>
+                        <option value="team">team</option>
+                      </select>
+                    </label>
+
+                    <label style={{ display: 'grid', gap: 6 }}>
+                      <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>На сколько дней</span>
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        <Clock4 size={16} color="#9ab0ff" />
+                        <input
+                          type="number"
+                          value={modalDays}
+                          onChange={(e) => setModalDays(Number(e.target.value))}
+                          style={{ flex: 1, padding: '10px 12px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                        />
+                      </div>
+                    </label>
+                  </div>
+                )}
+
+                {modalMode === 'grant' && (
+                  <button
+                    type="button"
+                    onClick={() => setModalExtend((v) => !v)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 10,
+                      padding: '10px 12px',
+                      borderRadius: 12,
+                      border: '1px solid var(--border)',
+                      background: 'rgba(148, 163, 184, 0.06)',
+                      color: 'var(--text-primary)',
+                      fontWeight: 900,
+                    }}
+                  >
+                    <span>Прибавлять дни к уже активной подписке</span>
+                    <span style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 8,
+                      border: modalExtend ? '1px solid rgba(34, 197, 94, 0.45)' : '1px solid rgba(148, 163, 184, 0.35)',
+                      background: modalExtend ? 'rgba(34, 197, 94, 0.16)' : 'transparent',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: modalExtend ? '#bbf7d0' : 'transparent',
+                    }}>
+                      <Check size={14} />
+                    </span>
+                  </button>
+                )}
+
+                <label style={{ display: 'grid', gap: 6 }}>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Причина</span>
+                  <textarea
+                    value={modalReason}
+                    onChange={(e) => setModalReason(e.target.value)}
+                    placeholder="Например: выдано за тестирование / продление / компенсация"
+                    rows={3}
+                    style={{ padding: '10px 12px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', resize: 'vertical' }}
+                  />
+                </label>
+
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => setModalOpen(false)}
+                    style={{ padding: '10px 12px', borderRadius: 12, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontWeight: 900 }}
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    onClick={submitModal}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 12,
+                      border: modalMode === 'grant' ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(248, 113, 113, 0.22)',
+                      background: modalMode === 'grant' ? 'rgba(34, 197, 94, 0.14)' : 'rgba(248, 113, 113, 0.10)',
+                      color: modalMode === 'grant' ? '#bbf7d0' : '#fecaca',
+                      fontWeight: 900,
+                    }}
+                  >
+                    {modalMode === 'grant' ? 'Выдать' : 'Аннулировать'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
