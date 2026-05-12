@@ -151,38 +151,13 @@ export const HomePage = () => {
             </a>
           </div>
 
-          <div style={{
-            marginTop: 52,
-            padding: '12px 26px',
-            borderRadius: 999,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-            background: 'rgba(6, 10, 18, 0.75)',
-            border: '1px solid rgba(92, 124, 250, 0.24)',
-            boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 6px 26px rgba(0, 0, 0, 0.35)',
-            backdropFilter: 'blur(8px)',
-          }}>
-            <span style={{
-              fontSize: 'clamp(14px, 1.9vw, 18px)',
-              fontFamily: '"JetBrains Mono", "SFMono-Regular", Menlo, monospace',
-              color: '#9ab0ff',
-              letterSpacing: '0.08em',
-              fontWeight: 500,
-              whiteSpace: 'nowrap',
-              textTransform: 'uppercase',
-            }}>
-              {`${formatNumber(downloadCount)} пользователей установило TubeCAD`}
-            </span>
-          </div>
+
         </div>
       </section>
 
       {/* Features Section */}
       <section id="features" style={{
         padding: '120px 32px',
-        background: 'var(--bg-secondary)',
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <h2 style={{

@@ -74,7 +74,7 @@ export const DownloadPage = () => {
           marginBottom: 64,
         }}>
           {[
-            { icon: Monitor, name: 'Windows', version: '1.0.0', size: '125 MB', color: '#5c7cfa', available: true },
+            { icon: Monitor, name: 'Windows', version: '1.0.0', size: '76 MB', color: '#5c7cfa', available: true },
             { icon: Apple, name: 'macOS', version: 'Скоро', size: '~118 MB', color: '#748ffc', available: false },
             { icon: Monitor, name: 'Linux', version: 'Скоро', size: '~112 MB', color: '#91a7ff', available: false },
           ].map((platform) => (
@@ -175,17 +175,6 @@ export const DownloadPage = () => {
                   <>
                     <Download size={18} />
                     Скачать
-                    <span style={{
-                      marginLeft: 4,
-                      padding: '2px 8px',
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      borderRadius: 4,
-                      fontSize: 11,
-                      fontFamily: 'monospace',
-                      fontWeight: 700,
-                    }}>
-                      {formatCount(downloadCount)}
-                    </span>
                   </>
                 ) : (
                   <>

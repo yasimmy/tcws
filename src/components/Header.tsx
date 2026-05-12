@@ -122,24 +122,6 @@ export const Header = () => {
         {/* Download Button */}
         <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <Link
-            to={isAuthenticated ? '/profile' : '/auth'}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '8px 14px',
-              borderRadius: 8,
-              border: '1px solid var(--border)',
-              color: 'var(--text-primary)',
-              fontSize: 14,
-              fontWeight: 600,
-              background: 'rgba(148, 163, 184, 0.08)',
-            }}
-          >
-            <UserRound size={16} />
-            {isAuthenticated ? 'Профиль' : 'Войти'}
-          </Link>
-          <Link
             to="/download"
             style={{
               display: 'flex',
