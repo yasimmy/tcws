@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Box, Download, Menu, X, Sparkles } from 'lucide-react'
+import { Box, Download, Menu, UserRound, X, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 
