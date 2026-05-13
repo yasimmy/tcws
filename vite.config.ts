@@ -8,7 +8,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'https://api.tubecad.fun',
+        target: 'https://tcws.onrender.com',
         changeOrigin: true,
       },
     },

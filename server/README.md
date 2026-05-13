@@ -136,7 +136,7 @@ SQLite база данных создается автоматически в п
 
 ## 🌐 Production
 
-- **API URL**: https://api.tubecad.fun
+- **API URL**: https://tcws.onrender.com
 - **Frontend URL**: https://tubecad.fun
 - **Frontend Repo**: https://github.com/yasimmy/tcws
 
