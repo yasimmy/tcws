@@ -8,7 +8,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'https://api.tubecad.fun',
         changeOrigin: true,
       },
     },

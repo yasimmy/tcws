@@ -1,47 +1,7 @@
 import { Download, Box, Zap, Layers, Code, Shield, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import { api } from '../lib/api'
 
 export const HomePage = () => {
-  const [downloadCount, setDownloadCount] = useState(0)
-
-  useEffect(() => {
-    let mounted = true
-    api.getDownloadCount()
-      .then((data) => {
-        if (mounted) setDownloadCount(data.count || 0)
-      })
-      .catch(() => {})
-
-    const refresh = () => {
-      api.getDownloadCount().then((data) => setDownloadCount(data.count || 0)).catch(() => {})
-    }
-    window.addEventListener('downloadCountChanged', refresh as EventListener)
-    return () => {
-      mounted = false
-      window.removeEventListener('downloadCountChanged', refresh as EventListener)
-    }
-  }, [])
-
-  const formatNumber = (num: number) => {
-    if (num === 0) return '0'
-    
-    const str = num.toString()
-    const result: string[] = []
-    
-    for (let i = 0; i < str.length; i++) {
-      result.push(str[i])
-      const isLastDigit = i === str.length - 1
-      const shouldAddSpace = !isLastDigit && (str.length - i - 1) % 3 === 0
-      
-      if (shouldAddSpace) {
-        result.push(' ')
-      }
-    }
-    
-    return result.join('')
-  }
 
   return (
     <div>

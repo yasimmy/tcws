@@ -18,7 +18,7 @@ npm install
 npm run dev
 ```
 
-Сайт откроется автоматически по адресу: http://localhost:3000
+Сайт откроется автоматически по адресу: http://localhost:3000 (dev) или https://tubecad.fun (production)
 
 ## 📦 Команды
 
