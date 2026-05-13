@@ -1,0 +1,28 @@
+{
+  "name": "tubecad-backend",
+  "version": "1.0.0",
+  "description": "Backend API для TubeCAD",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": ["tubecad", "api", "backend"],
+  "author": "TubeCAD Team",
+  "license": "PROPRIETARY",
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "sqlite3": "^5.1.7",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
