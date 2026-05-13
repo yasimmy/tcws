@@ -287,9 +287,20 @@ export const Footer = () => {
         flexWrap: 'wrap',
         gap: 16,
       }}>
-        <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+        <a 
+          href="/admin" 
+          style={{ 
+            color: 'var(--text-muted)', 
+            fontSize: 13,
+            textDecoration: 'none',
+            transition: 'color 0.2s',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+        >
           © {currentYear} TubeCAD. Все права защищены.
-        </p>
+        </a>
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           {['Политика конфиденциальности', 'Условия использования', 'Лицензия'].map((item) => (
             <a key={item} href="#" style={{ color: 'var(--text-muted)', fontSize: 13, transition: 'color 0.2s' }}
